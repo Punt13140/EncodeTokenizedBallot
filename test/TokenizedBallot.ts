@@ -31,23 +31,11 @@ describe("Tokenized Ballot", async () => {
     const mintTx = await myTokenContract.mint(voter.address, MINT_VALUE);
     await mintTx.wait();
 
-    const balanceBN = await myTokenContract.balanceOf(voter.address);
-    console.log(
-      `Account ${
-        voter.address
-      } has ${balanceBN.toString()} decimal units of MyToken\n`
-    );
     const delegateTx = await myTokenContract
       .connect(voter)
       .delegate(voter.address);
     await delegateTx.wait();
 
-    const votesAfter = await myTokenContract.getVotes(voter.address);
-    console.log(
-      `Account ${
-        voter.address
-      } has ${votesAfter.toString()} units of voting power after self delegating\n`
-    );
     const delegateTxBlockNumber = delegateTx?.blockNumber ?? 0;
 
     const TokenizedBallotContract = await TokenizedBallotFactory.deploy(
@@ -56,18 +44,6 @@ describe("Tokenized Ballot", async () => {
       delegateTxBlockNumber
     );
     await TokenizedBallotContract.waitForDeployment();
-
-    const pastVotes = await myTokenContract.getPastVotes(
-      voter.address,
-      delegateTxBlockNumber
-    );
-
-    console.log(
-      `Account ${
-        voter.address
-      } had ${pastVotes.toString()} units of voting power at block ${delegateTxBlockNumber}\n`
-    );
-
     return { deployer, voter, myTokenContract, TokenizedBallotContract };
   }
   describe("When the Tokenized Ballot contract is deployed", async () => {
