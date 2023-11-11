@@ -9,6 +9,7 @@ async function main() {
   if (!parameters || parameters.length < 2)
     throw new Error("Parameters not provided");
   const contractAddress = parameters[0];
+  const delegateTo = parameters[1];
 
   // Configuring the provider
   const provider = new ethers.JsonRpcProvider(
@@ -25,10 +26,27 @@ async function main() {
   }
 
   // Attaching to the contract
-  const ballotFactory = new MyToken__factory(wallet);
-  const ballotContract = ballotFactory.attach(contractAddress) as MyToken;
+  const tokenFactory = new MyToken__factory(wallet);
+  const tokenContract = tokenFactory.attach(contractAddress) as MyToken;
 
-  // TODO
+  // Check delegation state
+  const delegatedTo = await tokenContract.delegates(wallet.address);
+  if (delegatedTo == ethers.ZeroAddress) {
+    console.log(
+      `${wallet.address} has not delegated yet. Delegating to ${delegateTo}...`
+    );
+  } else {
+    console.log(
+      `${wallet.address} already has delegated to ${delegatedTo}. Changing delegation to ${delegateTo}...`
+    );
+  }
+
+  // Delegate
+  const delegateTx = await tokenContract.delegate(delegateTo);
+  await delegateTx.wait();
+
+  const newDelegatedTo = await tokenContract.delegates(wallet.address);
+  console.log(`${wallet.address} has delegated to ${newDelegatedTo}`);
 }
 
 main().catch((error) => {

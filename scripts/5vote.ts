@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { MyToken, MyToken__factory } from "../typechain-types";
+import { TokenizedBallot, TokenizedBallot__factory } from "../typechain-types";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -9,7 +9,7 @@ async function main() {
   if (!parameters || parameters.length < 3)
     throw new Error("Parameters not provided");
   const contractAddress = parameters[0];
-  const giveTo = parameters[1];
+  const proposalNumber = parameters[1];
   const amount = parameters[2];
 
   // Configuring the provider
@@ -27,29 +27,21 @@ async function main() {
   }
 
   // Attaching to the contract
-  const tokenFactory = new MyToken__factory(wallet);
-  const tokenContract = tokenFactory.attach(contractAddress) as MyToken;
+  const ballotFactory = new TokenizedBallot__factory(wallet);
+  const ballotContract = ballotFactory.attach(
+    contractAddress
+  ) as TokenizedBallot;
 
-  // Mint tokens
-  const mintTx = await tokenContract.mint(giveTo, ethers.parseUnits(amount));
-  await mintTx.wait();
-  console.log(`Minted ${amount} tokens to ${giveTo}`);
-
-  const [name, symbol, decimals, totalSupply] = await Promise.all([
-    tokenContract.name(),
-    tokenContract.symbol(),
-    tokenContract.decimals(),
-    tokenContract.totalSupply(),
-  ]);
-  console.log({ name, symbol, decimals, totalSupply });
-
-  // Check balance
-  const balanceGiveTo = await tokenContract.balanceOf(giveTo);
-  console.log(
-    `Balance of ${giveTo} is now ${ethers.formatUnits(
-      balanceGiveTo
-    )} ${symbol} units`
+  // Vote
+  const tx = await ballotContract.vote(
+    proposalNumber,
+    ethers.parseUnits(amount),
+    {
+      gasLimit: 1000000,
+    }
   );
+  const receipt = await tx.wait();
+  console.log(`Transaction completed ${receipt?.hash}`);
 }
 
 main().catch((error) => {

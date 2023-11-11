@@ -6,7 +6,7 @@ dotenv.config();
 async function main() {
   // Receive parameters from command line
   const parameters = process.argv.slice(2);
-  if (!parameters || parameters.length < 2)
+  if (!parameters || parameters.length < 1)
     throw new Error("Parameters not provided");
   const contractAddress = parameters[0];
 
@@ -30,7 +30,9 @@ async function main() {
     contractAddress
   ) as TokenizedBallot;
 
-  // TODO
+  // Get Winner
+  const winner = await ballotContract.winnerName();
+  console.log(`Winner is ${ethers.decodeBytes32String(winner)}`);
 }
 
 main().catch((error) => {
