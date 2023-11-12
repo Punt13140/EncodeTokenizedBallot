@@ -15,7 +15,7 @@ async function main() {
 
   const tokenContractAddress = parameters[0];
   const blockNumber = Number(parameters[1]);
-  const proposals = parameters.slice(3);
+  const proposals = parameters.slice(2);
 
   // Configuring the provider
   const provider = new ethers.JsonRpcProvider(
