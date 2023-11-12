@@ -1,15 +1,9 @@
 import { ethers } from "hardhat";
-import { TokenizedBallot, TokenizedBallot__factory } from "../typechain-types";
 import * as dotenv from "dotenv";
+import { MyToken__factory } from "../typechain-types";
 dotenv.config();
 
 async function main() {
-  // Receive parameters from command line
-  const parameters = process.argv.slice(2);
-  if (!parameters || parameters.length < 1)
-    throw new Error("Parameters not provided");
-  const contractAddress = parameters[0];
-
   // Configuring the provider
   const provider = new ethers.JsonRpcProvider(
     process.env.RPC_ENDPOINT_URL ?? ""
@@ -20,17 +14,16 @@ async function main() {
   console.log(`Using address ${wallet.address}`);
   const balanceBN = await provider.getBalance(wallet.address);
   const balance = Number(ethers.formatUnits(balanceBN));
+  console.log(`Wallet balance ${balance} ETH`);
   if (balance < 0.01) {
     throw new Error("Not enough ether");
   }
 
-  // Attaching to the contract
-  const ballotFactory = new TokenizedBallot__factory(wallet);
-  const ballotContract = ballotFactory.attach(
-    contractAddress
-  ) as TokenizedBallot;
-
-  // TODO
+  // Deploy token contract
+  const ballotFactory = new MyToken__factory(wallet);
+  const ballotContract = await ballotFactory.deploy();
+  await ballotContract.waitForDeployment();
+  console.log(`Contract deployed to ${ballotContract.target}`);
 }
 
 main().catch((error) => {
