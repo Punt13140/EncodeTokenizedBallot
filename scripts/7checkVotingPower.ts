@@ -38,7 +38,9 @@ async function main() {
   }
 
   const votingPower = await ballotContract.votingPower(checkAddress);
-  console.log(`Voting power for ${checkAddress}: ${votingPower}`);
+  console.log(
+    `Voting power for ${checkAddress}: ${ethers.formatUnits(votingPower)} units`
+  );
 }
 
 main().catch((error) => {
